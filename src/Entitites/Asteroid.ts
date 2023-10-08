@@ -1,18 +1,17 @@
 import P5, { Vector } from "p5";
+import ENV from "../Constants/ENV"
 
 export default class Asteroid {
 	p5: P5;
 	pos: P5.Vector;
     r: number;
-    dt: number;
 
     total: number;
     offset: number[];
     vel: Vector;
     
-    constructor(p5: P5, dt: number, pos?: P5.Vector,  r?: number) {
+    constructor(p5: P5, pos?: P5.Vector,  r?: number) {
         this.p5 = p5;
-        this.dt = dt;
 
         if (pos) {
             this.pos = pos.copy();
@@ -49,7 +48,7 @@ export default class Asteroid {
     update() {
         this.pos.add(this.vel);
         let DeltaV = this.vel.copy();
-        DeltaV.mult(this.dt);
+        DeltaV.mult(ENV.ADELTAV);
         this.pos.add(DeltaV);
     }
     edges() {
@@ -71,7 +70,7 @@ export default class Asteroid {
 
         let newA = [];
         for (let i = 0; i < 2; i++) {
-            newA.push(new Asteroid(p5, this.dt, this.pos, this.r / 2))
+            // newA.push(new Asteroid(p5, this.dt, this.pos, this.r / 2))
         }
         return newA;
     }

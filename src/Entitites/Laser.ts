@@ -33,4 +33,9 @@ export default class Laser {
             return false;
         }
     }
+    edges() {
+        const p5 = this.p5;
+
+        return this.pos.x > p5.width || this.pos.x < 0 || this.pos.y > p5.height ||this.pos.y < 0
+    }
 }

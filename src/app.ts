@@ -1,6 +1,10 @@
 import P5 from "p5";
 import "p5/lib/addons/p5.dom";
 // import "p5/lib/addons/p5.sound";
+import "./styles.scss";
+
+import KEYCODE from "./Constants/KEYCODE"
+import ENV from "./Constants/ENV"
 import Ship from "./Entitites/Ship";
 import Asteroid from "./Entitites/Asteroid";
 import Laser from "./Entitites/Laser"
@@ -27,69 +31,74 @@ const sketch = (p5: P5) => {
 	let lasers: Laser[] = [];
 	// let score = 0;
 	let lives = 3;
-	let dt = .1;
-
-	const upInput = 87
-	const leftInput = 68
-	const rightInput = 65
 
 	p5.setup = () => {
-		const canvas = p5.createCanvas(1920, 1080);
+		const canvas = p5.createCanvas(ENV.CANVAS_WIDTH, ENV.CANVAS_HEIGHT);
 		canvas.parent("app");
 
-		p5.background("white");
-
 		ship = new Ship(p5);
-		for (let i = 0; i < 50; i++) {
-			asteroids.push(new Asteroid(p5, dt));
+		for (let i = 0; i < ENV.STARTING_AST_NUM; i++) {
+			asteroids.push(new Asteroid(p5));
 		}
 	};
-
 	p5.draw = function () {
 		counter++;
-		p5.background(200);
+		p5.background('#222222')
+		
 		p5.textSize(20);
 		p5.text(`Counter: ${counter}`, 20, 20);
 		p5.text(`Asteroids: ${asteroids.length}`, 20, 40);
-		// text(`Lives: ${lives}`, 40, 40);
+		p5.text(`Lasers: ${lasers.length}`, 20, 60);
 	
 		//ASTEROIDS
 		asteroids.forEach((asteroid, index) => {
 			asteroid.show();
 			asteroid.update();
 			asteroid.edges();
-	
-			let pullDistance = 800
-			let releaseWhenCloseDistance = 40
+
 			let distance = p5.dist(ship.pos.x, ship.pos.y, asteroid.pos.x, asteroid.pos.y)
-			if (distance < pullDistance && distance > releaseWhenCloseDistance) {
+
+			if (distance < ENV.PULL_DIST && distance > ENV.MIN_RELEASE_DIST) {
 				ship.pull(asteroid)
 			}
 			if ((distance < (ship.r + asteroid.r)) && (asteroid.r >= ship.r)) {
 				lives--;
 				asteroids.splice(index, 1);
-				asteroids.push(new Asteroid(p5, dt));
+				asteroids.push(new Asteroid(p5));
 			}
 		})
-		lasers.push(new Laser(p5, ship.pos, ship.dir));
 	
 		//LASERS
+
+		//put a mod of counter on this for attack speed
+		lasers.push(new Laser(p5, ship.pos, ship.dir));
+
 		lasers.forEach((laser, laserIndex) => {
 			laser.show()
 			laser.update()
+			if (laser.edges()) {
+				lasers.splice(laserIndex, 1)
+				return;
+			}
 			asteroids.forEach((asteroid, asteroidIndex) => {
 				if (laser.hits(asteroid)) {
-					if (asteroid.r > 20) {
+					if (asteroid.r > ENV.AST_SPLIT_R) {
 						let asteroidChildren = asteroid.split();
 						asteroids.push(...asteroidChildren)
 					} else {
-						asteroids.push(new Asteroid(p5, dt))
+						asteroids.push(new Asteroid(p5))
 					}
 					asteroids.splice(asteroidIndex, 1);
 					lasers.splice(laserIndex, 1);
 				}
 			})
 		})
+
+		//SHIP
+		ship.show();
+		ship.turn();
+		ship.update();
+		ship.edges();
 	
 		//END THE GAME
 		if (lives < 1) {
@@ -100,34 +109,33 @@ const sketch = (p5: P5) => {
 				console.log('no new game')
 			}
 		}
-		ship.show();
-		ship.turn();
-		ship.update();
-		ship.edges();
 	}
 	p5.keyPressed = function () {
-		if (p5.key === ' ') {
-			lasers.push(new Laser(p5, ship.pos, ship.dir));
-		}
-		//right
-		if (p5.keyCode === leftInput) {
-			ship.setRotation(0.1);
-			//left
-		} else if (p5.keyCode === rightInput) {
-			ship.setRotation(-0.1)
-			//up
-		} else if (p5.keyCode === upInput) {
-			ship.thrust(true);
+		switch (p5.keyCode) {
+			case KEYCODE.RIGHT:
+				ship.setRotation(0.1);
+				break;
+			case KEYCODE.LEFT:
+				ship.setRotation(-0.1);
+				break;
+			case KEYCODE.UP:
+				ship.thrust(true);
+				break;
+			default:
+				break;
 		}
 	}
 	p5.keyReleased = function () {
-		//right || left
-		if (p5.keyCode === rightInput || p5.keyCode === leftInput) {
-			ship.setRotation(0);
-		}
-		//up
-		if (p5.keyCode === upInput) {
-			ship.thrust(false);
+		switch (p5.keyCode) {
+			case KEYCODE.RIGHT:
+			case KEYCODE.LEFT:
+				ship.setRotation(0);
+				break;
+			case KEYCODE.UP:
+				ship.thrust(false);
+				break;
+			default:
+				break;
 		}
 	}
 };

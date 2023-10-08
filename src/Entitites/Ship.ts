@@ -1,4 +1,5 @@
 import P5, { Vector } from "p5";
+import ENV from "../Constants/ENV"
 
 export default class Ship {
 	p5: P5;
@@ -10,8 +11,6 @@ export default class Ship {
     isAcc: boolean;
     mass: number;
     rs: number;
-    G: number;
-    C: number;
     
     constructor(p5: P5) {
         this.p5 = p5;
@@ -22,9 +21,8 @@ export default class Ship {
         this.vel = p5.createVector(0, 0)
         this.isAcc = false;
         this.mass = 50;
-        this.G = 6;
-        this.C = 5;
-        this.rs = (2 * this.G * this.mass / (this.C * this.C))
+
+        this.rs = (2 * ENV.ATTRACT_ACC * this.mass / (ENV.ESCAPE_ACC * ENV.ESCAPE_ACC))
     }
     show() {
         const p5 = this.p5;
@@ -60,10 +58,10 @@ export default class Ship {
     pull(asteroid) {
         let force = Vector.sub(this.pos, asteroid.pos);
         let r = force.mag();
-        let fg = this.mass * this.G / (r * r);
+        let fg = this.mass * ENV.ATTRACT_ACC / (r * r);
         force.setMag(fg);
         asteroid.vel.add(force);
-        asteroid.vel.limit(this.C);
+        asteroid.vel.limit(ENV.ESCAPE_ACC);
     }
     edges() {
         const p5 = this.p5;
