@@ -1,14 +1,18 @@
-import P5 from "p5";
-import "p5/lib/addons/p5.dom";
+import P5, { Vector } from "p5";
 // import "p5/lib/addons/p5.sound";
 import "./styles.scss";
 
-import KEYCODE from "./Constants/KEYCODE"
-import ENV from "./Constants/ENV"
+import KEYCODE from "./Constants/KEYCODE";
+import ENV from "./Constants/ENV";
+
+//Essentials
+import Bubble from "./Entitites/Bubble";
 import Ship from "./Entitites/Ship";
 import Asteroid from "./Entitites/Asteroid";
-import Laser from "./Entitites/Laser"
+import Laser from "./Entitites/Laser";
 
+//ENEMIES
+import EnemyShip from "./Entitites/EnemyShip";
 
 // document.onkeydown = function(evt) {
 //     evt = evt || window.event;
@@ -26,9 +30,12 @@ window.addEventListener('keydown', function(e) {
 const sketch = (p5: P5) => {
 	let counter = 0;
 
+	let bubbles: Bubble[] = [];
 	let ship: Ship;
+	let enemyShips: EnemyShip[] = [];
 	let asteroids: Asteroid[] = [];
 	let lasers: Laser[] = [];
+	let enemyLasers: Laser[] = []
 	// let score = 0;
 	let lives = 3;
 
@@ -37,18 +44,41 @@ const sketch = (p5: P5) => {
 		canvas.parent("app");
 
 		ship = new Ship(p5);
-		for (let i = 0; i < ENV.STARTING_AST_NUM; i++) {
-			asteroids.push(new Asteroid(p5));
+
+		enemyShips.push(new EnemyShip(p5, ship))
+		enemyShips.push(new EnemyShip(p5, ship))
+		enemyShips.push(new EnemyShip(p5, ship))
+		enemyShips.push(new EnemyShip(p5, ship))
+		enemyShips.push(new EnemyShip(p5, ship))
+
+		// for (let i = 0; i < ENV.STARTING_AST_NUM; i++) {
+		// 	asteroids.push(new Asteroid(p5));
+		// }
+		for(let i=0; i<100; i++){
+			bubbles.push(new Bubble(p5));
 		}
 	};
 	p5.draw = function () {
 		counter++;
-		p5.background('#222222')
-		
+		// p5.background('#222222')
+		p5.background(0,0,0, 100);
+		// p5.background(255,255,255, 40);
+
 		p5.textSize(20);
 		p5.text(`Counter: ${counter}`, 20, 20);
 		p5.text(`Asteroids: ${asteroids.length}`, 20, 40);
 		p5.text(`Lasers: ${lasers.length}`, 20, 60);
+		p5.text(`Bubbles: ${bubbles.length}`, 20, 80);
+		p5.text(`enemyShips: ${enemyShips.length}`, 20, 100);
+
+		//BUBBLES
+		bubbles.forEach((bubble) => {
+			bubble.show()
+			bubble.update()
+			bubble.edges()
+			//kudos - vel gets added to position -> the opposite of ship velocity
+			bubble.vel = p5.createVector(ship.vel.x * -1, ship.vel.y * -1)
+		})
 	
 		//ASTEROIDS
 		asteroids.forEach((asteroid, index) => {
@@ -69,9 +99,14 @@ const sketch = (p5: P5) => {
 		})
 	
 		//LASERS
-
 		//put a mod of counter on this for attack speed
-		lasers.push(new Laser(p5, ship.pos, ship.dir));
+		// estimate 60 fps so if attack speed 10 then 6 bullets per second
+		// 1 per second is attack speed 60
+		// PERK ADD HERE
+		const attackSpeed = 10
+		if (counter % attackSpeed === 0) {
+			lasers.push(new Laser(p5, ship.pos, ship.dir));
+		}
 
 		lasers.forEach((laser, laserIndex) => {
 			laser.show()
@@ -92,6 +127,26 @@ const sketch = (p5: P5) => {
 					lasers.splice(laserIndex, 1);
 				}
 			})
+			enemyShips.forEach((enemyShip, enemyShipIndex) => {
+				if (laser.hits(enemyShip)) {
+					enemyShips.splice(enemyShipIndex, 1);
+					lasers.splice(laserIndex, 1);
+				}
+			})
+		})
+
+		enemyLasers.forEach((laser, laserIndex) => {
+			laser.show()
+			laser.update()
+			if (laser.edges()) {
+				enemyLasers.splice(laserIndex, 1)
+				return;
+			}
+			if (laser.hits(ship)) {
+				lives--
+				enemyLasers.splice(laserIndex, 1)
+				return
+			}
 		})
 
 		//SHIP
@@ -99,6 +154,18 @@ const sketch = (p5: P5) => {
 		ship.turn();
 		ship.update();
 		ship.edges();
+
+		//ENEMIES
+		if (counter % 150 === 0) {
+			enemyShips.push(new EnemyShip(p5, ship))
+		}
+
+		enemyShips.forEach((enemyShip) => {
+			enemyShip.show(ship);
+			enemyShip.turn(ship);
+			enemyShip.update(ship, enemyLasers, counter);
+			enemyShip.edges();
+		})
 	
 		//END THE GAME
 		if (lives < 1) {
@@ -119,7 +186,19 @@ const sketch = (p5: P5) => {
 				ship.setRotation(-0.1);
 				break;
 			case KEYCODE.UP:
-				ship.thrust(true);
+				ship.thrust(true);2
+				break;
+			// ESCAPE: PAUSE GAME : TODO BETTER THAN THIS. menu system
+			// use redraw here to rerender but start main loop on selection
+			case KEYCODE.ESCAPE:
+				let button;
+				button = p5.createButton('resume');
+				button.position(p5.width / 2, p5.height / 2);
+				p5.noLoop()
+				button.mousePressed(() => {
+					p5.loop()
+					button.remove()
+				});
 				break;
 			default:
 				break;

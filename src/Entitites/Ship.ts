@@ -28,7 +28,8 @@ export default class Ship {
         const p5 = this.p5;
 
         p5.push();
-        p5.fill(0, 255, 100);
+        p5.stroke(245)
+        p5.fill('rgba(0, 255, 100, 0.5)');
         p5.translate(this.pos.x, this.pos.y);
         p5.rotate(this.dir + p5.PI / 2);
         p5.triangle(-this.r, this.r, this.r, this.r, 0, -this.r);
@@ -50,7 +51,7 @@ export default class Ship {
     acc() {
         let force = Vector.fromAngle(this.dir);
         force.mult(0.1);
-        this.vel.add(force);
+        this.vel = Vector.add(this.vel, force);
     }
     thrust(boolean) {
         this.isAcc = boolean;

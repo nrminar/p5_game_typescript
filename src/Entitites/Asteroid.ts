@@ -31,7 +31,7 @@ export default class Asteroid {
         const p5 = this.p5;
 
         p5.push();
-        p5.fill(0);
+        p5.fill(255);
         p5.translate(this.pos.x, this.pos.y)
 
         p5.beginShape();
@@ -46,10 +46,10 @@ export default class Asteroid {
         p5.pop();
     }
     update() {
-        this.pos.add(this.vel);
+        this.pos = Vector.add(this.pos, this.vel);
         let DeltaV = this.vel.copy();
         DeltaV.mult(ENV.ADELTAV);
-        this.pos.add(DeltaV);
+        this.pos = Vector.add(this.pos, DeltaV);
     }
     edges() {
         const p5 = this.p5;
