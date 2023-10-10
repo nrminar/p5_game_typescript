@@ -17,7 +17,6 @@ export default class EnemyShip {
     constructor(p5: P5, ship: Ship) {
         this.p5 = p5;
         this.pos = p5.createVector(p5.random(p5.width), p5.random(p5.height));
-        // this.pos = p5.createVector(p5.width / 2, p5.height / 2);
         this.r = 30;
         this.dir = 0;
         this.rotation = 0;
@@ -36,27 +35,18 @@ export default class EnemyShip {
         this.pos.x = ship.pos.x - p5.cos(this.angle) * 300
         this.pos.y = ship.pos.y - p5.sin(this.angle) * 300
 
-        // p5.push();
-
-        //FADE ENEMY IN for hitting
         p5.fill(255, 0, 100);
         p5.ellipse(this.pos.x, this.pos.y, this.r, this.r)
-        // p5.translate(this.pos.x, this.pos.y);
-        // p5.rotate(this.pos.heading());
-        // p5.translate(this.pos.mag(), 0);
-        // p5.setHeading(ship.pos)
-        // p5.rotate(Vector.angleBetween(this.pos, ship.pos));
-        // p5.triangle(-this.r, this.r, this.r, this.r, 0, -this.r);
-        // p5.pop();
     }
     turn(ship: Ship) {
     }
     update(ship: Ship, lasers: Laser[], counter: number) {
         const p5 = this.p5;
-		const attackSpeed = 10
+		const attackSpeed = 30
 		if (counter % attackSpeed === 0) {
+
             //3rd argument - what do i pass here
-			lasers.push(new Laser(p5, this.pos, this.angle * -1, 'rgba(255, 0, 100, 1)'));
+			lasers.push(new Laser(p5, this.pos, this.angle, 'rgba(255, 0, 100, 1)'));
 		}
     }
     edges() {

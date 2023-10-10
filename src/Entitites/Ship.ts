@@ -11,6 +11,9 @@ export default class Ship {
     isAcc: boolean;
     mass: number;
     rs: number;
+    exp: number;
+    level: number;
+    buffs: string[]
     
     constructor(p5: P5) {
         this.p5 = p5;
@@ -21,6 +24,10 @@ export default class Ship {
         this.vel = p5.createVector(0, 0)
         this.isAcc = false;
         this.mass = 50;
+        this.exp = 0;
+        this.level = 1
+
+        this.buffs = []
 
         this.rs = (2 * ENV.ATTRACT_ACC * this.mass / (ENV.ESCAPE_ACC * ENV.ESCAPE_ACC))
     }
@@ -56,13 +63,13 @@ export default class Ship {
     thrust(boolean) {
         this.isAcc = boolean;
     }
-    pull(asteroid) {
-        let force = Vector.sub(this.pos, asteroid.pos);
+    pull(target, strength?: number) {
+        let force = Vector.sub(this.pos, target.pos);
         let r = force.mag();
-        let fg = this.mass * ENV.ATTRACT_ACC / (r * r);
+        let fg = this.mass * (ENV.ATTRACT_ACC | strength) / (r * r);
         force.setMag(fg);
-        asteroid.vel.add(force);
-        asteroid.vel.limit(ENV.ESCAPE_ACC);
+        target.vel.add(force);
+        target.vel.limit(ENV.ESCAPE_ACC);
     }
     edges() {
         const p5 = this.p5;
@@ -76,6 +83,27 @@ export default class Ship {
             this.pos.y = -this.r
         } else if (this.pos.y < -this.r) {
             this.pos.y = p5.height + this.r
+        }
+    }
+    checkExp() {
+        const p5 = this.p5;
+        const mods = ['attackSpeed', 'speed', 'lives']
+        let buttons = []
+
+        if (this.exp % (3 * this.level) === 0 && this.exp !== 0) {
+            p5.noLoop()
+            mods.forEach((mod, modIndex) => {
+                let button;
+                button = p5.createButton(mod);
+                button.position(p5.width / 2 + modIndex * 100, p5.height / 2);
+                button.mousePressed(() => {
+                    this.level++
+                    this.buffs.push(mod)
+                    p5.loop()
+                    buttons.forEach((but) => but.remove())
+                });
+                buttons.push(button)
+            })
         }
     }
 }

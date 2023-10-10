@@ -13,6 +13,7 @@ import Laser from "./Entitites/Laser";
 
 //ENEMIES
 import EnemyShip from "./Entitites/EnemyShip";
+import Experience from "./Entitites/Experience";
 
 // document.onkeydown = function(evt) {
 //     evt = evt || window.event;
@@ -36,8 +37,9 @@ const sketch = (p5: P5) => {
 	let asteroids: Asteroid[] = [];
 	let lasers: Laser[] = [];
 	let enemyLasers: Laser[] = []
+	let experiences: Experience[] = []
 	// let score = 0;
-	let lives = 3;
+	let lives = 30;
 
 	p5.setup = () => {
 		const canvas = p5.createCanvas(ENV.CANVAS_WIDTH, ENV.CANVAS_HEIGHT);
@@ -45,10 +47,6 @@ const sketch = (p5: P5) => {
 
 		ship = new Ship(p5);
 
-		enemyShips.push(new EnemyShip(p5, ship))
-		enemyShips.push(new EnemyShip(p5, ship))
-		enemyShips.push(new EnemyShip(p5, ship))
-		enemyShips.push(new EnemyShip(p5, ship))
 		enemyShips.push(new EnemyShip(p5, ship))
 
 		// for (let i = 0; i < ENV.STARTING_AST_NUM; i++) {
@@ -70,6 +68,7 @@ const sketch = (p5: P5) => {
 		p5.text(`Lasers: ${lasers.length}`, 20, 60);
 		p5.text(`Bubbles: ${bubbles.length}`, 20, 80);
 		p5.text(`enemyShips: ${enemyShips.length}`, 20, 100);
+		p5.text(`ship exp: ${ship.exp}`, 20, 140);
 
 		//BUBBLES
 		bubbles.forEach((bubble) => {
@@ -129,6 +128,7 @@ const sketch = (p5: P5) => {
 			})
 			enemyShips.forEach((enemyShip, enemyShipIndex) => {
 				if (laser.hits(enemyShip)) {
+					experiences.push(new Experience(p5, enemyShip.pos))
 					enemyShips.splice(enemyShipIndex, 1);
 					lasers.splice(laserIndex, 1);
 				}
@@ -149,12 +149,6 @@ const sketch = (p5: P5) => {
 			}
 		})
 
-		//SHIP
-		ship.show();
-		ship.turn();
-		ship.update();
-		ship.edges();
-
 		//ENEMIES
 		if (counter % 150 === 0) {
 			enemyShips.push(new EnemyShip(p5, ship))
@@ -166,6 +160,30 @@ const sketch = (p5: P5) => {
 			enemyShip.update(ship, enemyLasers, counter);
 			enemyShip.edges();
 		})
+
+		//EXP
+		experiences.forEach((experience, experienceIndex) => {
+			experience.show()
+			experience.update()
+			experience.edges()
+			
+			let distance = p5.dist(ship.pos.x, ship.pos.y, experience.pos.x, experience.pos.y)
+
+			if (distance < 1000 && distance > ENV.MIN_RELEASE_DIST) {
+				ship.pull(experience, 100)
+			}
+			if (experience.hits(ship)) {
+				ship.exp++
+				experiences.splice(experienceIndex, 1);
+			}
+		})
+
+		//SHIP
+		ship.show();
+		ship.turn();
+		ship.update();
+		ship.edges();
+		ship.checkExp();
 	
 		//END THE GAME
 		if (lives < 1) {
