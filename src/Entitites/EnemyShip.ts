@@ -11,10 +11,9 @@ export default class EnemyShip {
     vel: P5.Vector;
     isAcc: boolean;
     lifeTime: number;
-    // angleToPlayer: number;
     angle: number;
     
-    constructor(p5: P5, ship: Ship) {
+    constructor(p5: P5) {
         this.p5 = p5;
         this.pos = p5.createVector(p5.random(p5.width), p5.random(p5.height));
         this.r = 30;
@@ -38,14 +37,10 @@ export default class EnemyShip {
         p5.fill(255, 0, 100);
         p5.ellipse(this.pos.x, this.pos.y, this.r, this.r)
     }
-    turn(ship: Ship) {
-    }
-    update(ship: Ship, lasers: Laser[], counter: number) {
+    update(lasers: Laser[], counter: number) {
         const p5 = this.p5;
 		const attackSpeed = 30
 		if (counter % attackSpeed === 0) {
-
-            //3rd argument - what do i pass here
 			lasers.push(new Laser(p5, this.pos, this.angle, 'rgba(255, 0, 100, 1)'));
 		}
     }

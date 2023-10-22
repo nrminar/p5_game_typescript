@@ -1,5 +1,6 @@
 import P5, { Vector } from "p5";
 import ENV from "../Constants/ENV"
+import BUFFS from "../Constants/BUFFS"
 
 export default class Ship {
 	p5: P5;
@@ -63,10 +64,10 @@ export default class Ship {
     thrust(boolean) {
         this.isAcc = boolean;
     }
-    pull(target, strength?: number) {
+    pull(target, strength?: number | ENV.ATTRACT_ACC ) {
         let force = Vector.sub(this.pos, target.pos);
         let r = force.mag();
-        let fg = this.mass * (ENV.ATTRACT_ACC | strength) / (r * r);
+        let fg = this.mass * (strength) / (r * r);
         force.setMag(fg);
         target.vel.add(force);
         target.vel.limit(ENV.ESCAPE_ACC);
@@ -87,23 +88,33 @@ export default class Ship {
     }
     checkExp() {
         const p5 = this.p5;
-        const mods = ['attackSpeed', 'speed', 'lives']
         let buttons = []
 
         if (this.exp % (3 * this.level) === 0 && this.exp !== 0) {
             p5.noLoop()
-            mods.forEach((mod, modIndex) => {
-                let button;
-                button = p5.createButton(mod);
-                button.position(p5.width / 2 + modIndex * 100, p5.height / 2);
+            const randBuffs: number[] = [];
+            while (randBuffs.length < 3) {
+                const rand = p5.random(Object.keys(BUFFS))
+                if (randBuffs.indexOf(rand) === -1) {
+                    randBuffs.push(rand);
+                }
+            }
+            randBuffs.forEach((key, index) => {
+                let button: P5.Element;
+                button = p5.createButton(BUFFS[key]);
+                button.position(p5.width / 2 + index * 200, p5.height - 100);
+				button.class('card')
                 button.mousePressed(() => {
                     this.level++
-                    this.buffs.push(mod)
-                    p5.loop()
+                    this.buffs.push(BUFFS[key])
                     buttons.forEach((but) => but.remove())
+                    p5.loop()
                 });
                 buttons.push(button)
             })
+            p5.textSize(32);
+            p5.text("LEVEL UP", p5.width /2, p5.height - 150);
+            p5.fill(0, 102, 153);
         }
     }
 }

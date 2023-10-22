@@ -14,6 +14,7 @@ import Laser from "./Entitites/Laser";
 //ENEMIES
 import EnemyShip from "./Entitites/EnemyShip";
 import Experience from "./Entitites/Experience";
+import BUFFS from "./Constants/BUFFS";
 
 // document.onkeydown = function(evt) {
 //     evt = evt || window.event;
@@ -47,7 +48,7 @@ const sketch = (p5: P5) => {
 
 		ship = new Ship(p5);
 
-		enemyShips.push(new EnemyShip(p5, ship))
+		enemyShips.push(new EnemyShip(p5))
 
 		// for (let i = 0; i < ENV.STARTING_AST_NUM; i++) {
 		// 	asteroids.push(new Asteroid(p5));
@@ -68,7 +69,10 @@ const sketch = (p5: P5) => {
 		p5.text(`Lasers: ${lasers.length}`, 20, 60);
 		p5.text(`Bubbles: ${bubbles.length}`, 20, 80);
 		p5.text(`enemyShips: ${enemyShips.length}`, 20, 100);
-		p5.text(`ship exp: ${ship.exp}`, 20, 140);
+		
+		p5.text(`ship lives: ${lives}`, 20, 140);
+		p5.text(`ship exp: ${ship.exp}`, 20, 160);
+		p5.text(`ship buffs: ${ship.buffs}`, 20, 180);
 
 		//BUBBLES
 		bubbles.forEach((bubble) => {
@@ -88,7 +92,7 @@ const sketch = (p5: P5) => {
 			let distance = p5.dist(ship.pos.x, ship.pos.y, asteroid.pos.x, asteroid.pos.y)
 
 			if (distance < ENV.PULL_DIST && distance > ENV.MIN_RELEASE_DIST) {
-				ship.pull(asteroid)
+				ship.pull(asteroid, 1)
 			}
 			if ((distance < (ship.r + asteroid.r)) && (asteroid.r >= ship.r)) {
 				lives--;
@@ -102,8 +106,13 @@ const sketch = (p5: P5) => {
 		// estimate 60 fps so if attack speed 10 then 6 bullets per second
 		// 1 per second is attack speed 60
 		// PERK ADD HERE
-		const attackSpeed = 10
-		if (counter % attackSpeed === 0) {
+		const attackSpeed = () => {
+			const attackSpeedBuffs = ship.buffs.filter((buff) => buff === BUFFS.ATTACK_SPEED)
+			if (!attackSpeedBuffs.length) return 10
+
+			return 10 - attackSpeedBuffs.length
+		}
+		if (counter % attackSpeed() === 0) {
 			lasers.push(new Laser(p5, ship.pos, ship.dir));
 		}
 
@@ -150,14 +159,13 @@ const sketch = (p5: P5) => {
 		})
 
 		//ENEMIES
-		if (counter % 150 === 0) {
-			enemyShips.push(new EnemyShip(p5, ship))
+		if (counter % (150 - ship.level * 10) === 0) {
+			enemyShips.push(new EnemyShip(p5))
 		}
 
 		enemyShips.forEach((enemyShip) => {
 			enemyShip.show(ship);
-			enemyShip.turn(ship);
-			enemyShip.update(ship, enemyLasers, counter);
+			enemyShip.update(enemyLasers, counter);
 			enemyShip.edges();
 		})
 
@@ -209,9 +217,11 @@ const sketch = (p5: P5) => {
 			// ESCAPE: PAUSE GAME : TODO BETTER THAN THIS. menu system
 			// use redraw here to rerender but start main loop on selection
 			case KEYCODE.ESCAPE:
+				if (!p5.isLooping()) break;
 				let button;
 				button = p5.createButton('resume');
 				button.position(p5.width / 2, p5.height / 2);
+				button.class('card')
 				p5.noLoop()
 				button.mousePressed(() => {
 					p5.loop()
