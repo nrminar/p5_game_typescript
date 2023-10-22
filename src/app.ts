@@ -50,9 +50,9 @@ const sketch = (p5: P5) => {
 
 		enemyShips.push(new EnemyShip(p5))
 
-		// for (let i = 0; i < ENV.STARTING_AST_NUM; i++) {
-		// 	asteroids.push(new Asteroid(p5));
-		// }
+		for (let i = 0; i < ENV.STARTING_AST_NUM; i++) {
+			asteroids.push(new Asteroid(p5));
+		}
 		for(let i=0; i<100; i++){
 			bubbles.push(new Bubble(p5));
 		}
@@ -107,10 +107,11 @@ const sketch = (p5: P5) => {
 		// 1 per second is attack speed 60
 		// PERK ADD HERE
 		const attackSpeed = () => {
+			const defaultSpeed = 30
 			const attackSpeedBuffs = ship.buffs.filter((buff) => buff === BUFFS.ATTACK_SPEED)
-			if (!attackSpeedBuffs.length) return 10
+			if (!attackSpeedBuffs.length) return defaultSpeed
 
-			return 10 - attackSpeedBuffs.length
+			return defaultSpeed - attackSpeedBuffs.length
 		}
 		if (counter % attackSpeed() === 0) {
 			lasers.push(new Laser(p5, ship.pos, ship.dir));
@@ -125,7 +126,7 @@ const sketch = (p5: P5) => {
 			}
 			asteroids.forEach((asteroid, asteroidIndex) => {
 				if (laser.hits(asteroid)) {
-					if (asteroid.r > ENV.AST_SPLIT_R) {
+					if (asteroid.r > ENV.AST_SPLIT_R && asteroids.length < 26) {
 						let asteroidChildren = asteroid.split();
 						asteroids.push(...asteroidChildren)
 					} else {

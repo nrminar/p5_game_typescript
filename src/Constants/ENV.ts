@@ -8,7 +8,7 @@ const enum ENV {
     ADELTAV = 0.1,
     ATTRACT_ACC = 6,
     ESCAPE_ACC = 5,
-    STARTING_AST_NUM = 50,
+    STARTING_AST_NUM = 25,
 
     //asteroid - ship gravity distance vars
     PULL_DIST = 800,
