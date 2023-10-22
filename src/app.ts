@@ -5,13 +5,11 @@ import "./styles.scss";
 import KEYCODE from "./Constants/KEYCODE";
 import ENV from "./Constants/ENV";
 
-//Essentials
+//THINGS
 import Bubble from "./Entitites/Bubble";
 import Ship from "./Entitites/Ship";
 import Asteroid from "./Entitites/Asteroid";
 import Laser from "./Entitites/Laser";
-
-//ENEMIES
 import EnemyShip from "./Entitites/EnemyShip";
 import Experience from "./Entitites/Experience";
 import BUFFS from "./Constants/BUFFS";
