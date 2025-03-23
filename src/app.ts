@@ -211,7 +211,7 @@ const sketch = (p5: P5) => {
 				ship.setRotation(-0.1);
 				break;
 			case KEYCODE.UP:
-				ship.thrust(true);2
+				ship.thrust(true);
 				break;
 			// ESCAPE: PAUSE GAME : TODO BETTER THAN THIS. menu system
 			// use redraw here to rerender but start main loop on selection
